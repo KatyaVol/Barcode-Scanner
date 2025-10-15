@@ -30,26 +30,6 @@ iOS приложение для сканирования штрих-кодов E
 
 ---
 
-## 🗂️ Структура проекта
-
-BarcodeScanner/
-├─ BarcodeScannerApp.swift # Точка входа
-├─ Screens/
-│ └─ BarcodeScanner/
-│ ├─ BarcodeScannerView.swift # Главный экран (View)
-│ └─ BarcodeScannerViewModel.swift # Бизнес-логика (ViewModel)
-├─ Views/
-│ └─ UIKit Components/
-│ ├─ ScannerView.swift # SwiftUI обёртка (UIViewControllerRepresentable)
-│ └─ ScannerViewController.swift # UIKit контроллер для AVFoundation
-├─ Utilities/
-│ ├─ Alert.swift # Модели алертов
-│ └─ CameraError.swift # Типы ошибок камеры
-└─ Assets.xcassets/
-
-
----
-
 ## 🔄 Цепочка событий «Камера → Баркод → UI»
 
 1. `AVCaptureSession` захватывает видео с камеры
