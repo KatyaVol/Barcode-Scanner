@@ -8,37 +8,52 @@
 import AVFoundation
 import UIKit
 
-enum CameraError: String {
-    case invalidDeviceInput = "Something is wrong with the camera input. We are unable to access the camera."
-    case invalidScannedValue = "The value scanned is not a valid barcode. This app scans EAN-8 and EAN-13"
-}
-
 protocol ScannerViewControllerDelegate: AnyObject {
     func didFind(barcode: String)
     func didFail(with error: CameraError)
 }
 
 final class ScannerViewController: UIViewController {
-
+    
     let captureSession = AVCaptureSession()
     var previewLayer: AVCaptureVideoPreviewLayer?
-
+    
     weak var scannerDelegate: ScannerViewControllerDelegate?
-
+    
+    private var hasReportedError = false
+    
     init(scannerDelegate: ScannerViewControllerDelegate) {
         super.init(nibName: nil, bundle: nil)
         self.scannerDelegate = scannerDelegate
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCaptureSession()
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        guard let previewLayer else {
+            if !hasReportedError {
+                hasReportedError = true
+                scannerDelegate?.didFail(with: .invalidDeviceInput)
+            }
+            return
+        }
+        previewLayer.frame = view.layer.bounds
+        
+    }
+    
+}
+
+extension ScannerViewController {
     
     private func setupCaptureSession() {
         guard
@@ -75,8 +90,11 @@ final class ScannerViewController: UIViewController {
         }
         view.layer.addSublayer(previewLayer)
         
-        captureSession.startRunning()
+        DispatchQueue.global().async {
+            self.captureSession.startRunning()
+        }
     }
+    
 }
 
 extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
@@ -93,7 +111,8 @@ extension ScannerViewController: AVCaptureMetadataOutputObjectsDelegate {
             scannerDelegate?.didFail(with: .invalidScannedValue)
             return
         }
+        captureSession.stopRunning()
         scannerDelegate?.didFind(barcode: barcode)
     }
-
+    
 }
